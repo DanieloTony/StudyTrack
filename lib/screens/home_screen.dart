@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/study_task.dart';
+import '../services/focus_timer_controller.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../widgets/daily_celebration.dart';
@@ -12,6 +13,7 @@ import '../widgets/task_tile.dart';
 
 class HomeScreen extends StatelessWidget {
   final List<StudyTask> tasks;
+  final FocusTimerController? focusTimerController;
   final bool isLoading;
   final bool hasLoadError;
   final VoidCallback onRetryLoad;
@@ -128,7 +130,7 @@ class HomeScreen extends StatelessWidget {
               children: [
                 // 1. Greeting Section with Profile & Date
                 _StudyHomeHeader(
-                  greeting: '${_greeting()}, Maya',
+                  greeting: _greeting(),
                   subtitle: 'Make today count · Semester in progress',
                   date: _formattedDate(now),
                 ),
@@ -147,7 +149,7 @@ class HomeScreen extends StatelessWidget {
                 const SizedBox(height: AppSpacing.sm),
 
                 // 3. Focus Timer Card
-                const FocusTimerCard(),
+                FocusTimerCard(controller: focusTimerController),
                 const SizedBox(height: AppSpacing.md),
 
                 // Study Tracks Advisory / Context

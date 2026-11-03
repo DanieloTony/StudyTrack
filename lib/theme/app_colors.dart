@@ -7,6 +7,7 @@ abstract final class AppColors {
   static const Color darkCocoa = Color(0xFF3A2418);
   static const Color walnut = Color(0xFF6B4A2E);
   static const Color caramel = Color(0xFFA88462);
+  static const Color softGold = Color(0xFFC49B73);
   static const Color warmSand = Color(0xFFD5C4AE);
   static const Color charcoal = Color(0xFF4A4A46);
 
@@ -26,17 +27,17 @@ abstract final class AppColors {
   static const Color accent = caramel;
 
   // Dark Theme Surfaces & Backgrounds
-  static const Color darkBackground = espresso; // #1A120E
-  static const Color darkSurface = darkCocoa; // #3A2418
-  static const Color darkRaised = Color(0xFF4A3123);
-  static const Color darkBorder = Color(0xFF4E3322);
+  static const Color darkBackground = Color(0xFF2B211B); // Soft mocha
+  static const Color darkSurface = Color(0xFF49372A); // Deep mocha glass
+  static const Color darkRaised = Color(0xFF231A14);
+  static const Color darkBorder = Color(0xFF594638);
   static const Color darkSoftSage = Color(0xFF332015);
 
   // Dark Theme Typography & Actions
-  static const Color darkText = warmSand; // #D5C4AE
-  static const Color darkTextSecondary = caramel; // #A88462
+  static const Color darkText = Color(0xFFE9DED0); // Warm vanilla
+  static const Color darkTextSecondary = Color(0xFFD5C4AE); // Oatmeal
   static const Color darkMeta = Color(0xFF8C6E52);
-  static const Color darkPrimary = walnut; // #6B4A2E
+  static const Color darkPrimary = caramel; // Warm caramel
 
   // Status Cues (Harmonized with earthy palette)
   static const Color success = Color(0xFF2E6B4A);

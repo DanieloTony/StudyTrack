@@ -7,10 +7,12 @@ import 'glass_surface.dart';
 
 class FocusTimerCard extends StatefulWidget {
   final Duration focusDuration;
+  final FocusTimerController? controller;
 
   const FocusTimerCard({
     super.key,
     this.focusDuration = const Duration(minutes: 25),
+    this.controller,
   });
 
   @override
@@ -19,13 +21,25 @@ class FocusTimerCard extends StatefulWidget {
 
 class _FocusTimerCardState extends State<FocusTimerCard>
     with WidgetsBindingObserver {
-  late final FocusTimerController _controller;
+  late FocusTimerController _controller;
+  bool _ownsController = false;
 
   @override
   void initState() {
     super.initState();
-    _controller = FocusTimerController(focusDuration: widget.focusDuration);
+    _controller = widget.controller ?? FocusTimerController(focusDuration: widget.focusDuration);
+    _ownsController = widget.controller == null;
     WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didUpdateWidget(covariant FocusTimerCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller != widget.controller && widget.controller != null) {
+      if (_ownsController) _controller.dispose();
+      _controller = widget.controller!;
+      _ownsController = false;
+    }
   }
 
   @override
@@ -38,7 +52,7 @@ class _FocusTimerCardState extends State<FocusTimerCard>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _controller.dispose();
+    if (_ownsController) _controller.dispose();
     super.dispose();
   }
 
