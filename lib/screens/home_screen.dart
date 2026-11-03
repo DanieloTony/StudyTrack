@@ -13,7 +13,7 @@ import '../widgets/task_tile.dart';
 
 class HomeScreen extends StatelessWidget {
   final List<StudyTask> tasks;
-  final FocusTimerController focusTimerController;
+  final FocusTimerController? focusTimerController;
   final bool isLoading;
   final bool hasLoadError;
   final VoidCallback onRetryLoad;
@@ -25,7 +25,6 @@ class HomeScreen extends StatelessWidget {
   const HomeScreen({
     super.key,
     required this.tasks,
-    required this.focusTimerController,
     required this.isLoading,
     required this.hasLoadError,
     required this.onRetryLoad,
