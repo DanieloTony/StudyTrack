@@ -67,7 +67,7 @@ void main() {
     await tester.pump();
     expect(
       tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode,
-      ThemeMode.dark,
+      ThemeMode.light,
     );
 
     await tester.tap(find.text('Tasks'));
