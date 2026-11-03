@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../models/study_task.dart';
 import '../screens/add_task_screen.dart';
+import '../screens/analytics_screen.dart';
+import '../screens/focus_timer_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/settings_screen.dart';
 import '../screens/tasks_screen.dart';
+import '../services/focus_timer_controller.dart';
 import '../services/notification_service.dart';
 import '../services/task_storage_service.dart';
 import '../theme/app_colors.dart';
@@ -25,7 +28,8 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
+  late final FocusTimerController _focusTimerController;
   final TaskStorageService _storageService = TaskStorageService();
 
   static const Duration _snackBarDuration = Duration(seconds: 3);
@@ -40,7 +44,23 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _focusTimerController = FocusTimerController();
     _initializeNotificationsAndTasks();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _focusTimerController.refresh();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _focusTimerController.dispose();
+    super.dispose();
   }
 
   Future<void> _initializeNotificationsAndTasks() async {
@@ -343,6 +363,7 @@ class _MainScreenState extends State<MainScreen> {
     final pages = [
       HomeScreen(
         tasks: _tasks,
+        focusTimerController: _focusTimerController,
         isLoading: _isLoading,
         hasLoadError: _loadFailed,
         onRetryLoad: _loadTasks,
@@ -362,6 +383,8 @@ class _MainScreenState extends State<MainScreen> {
         onDeleteTask: _deleteTask,
         onEditTask: _editTask,
       ),
+      FocusTimerScreen(controller: _focusTimerController),
+      AnalyticsScreen(tasks: _tasks),
       SettingsScreen(
         tasks: _tasks,
         isDarkMode: widget.isDarkMode,
@@ -437,11 +460,25 @@ class _MainScreenState extends State<MainScreen> {
                   onTap: () => _selectDestination(1),
                 ),
                 _NavigationItem(
+                  label: 'Timer',
+                  icon: Icons.timer_outlined,
+                  selectedIcon: Icons.timer_rounded,
+                  selected: _selectedIndex == 2,
+                  onTap: () => _selectDestination(2),
+                ),
+                _NavigationItem(
+                  label: 'Analytics',
+                  icon: Icons.insights_outlined,
+                  selectedIcon: Icons.insights_rounded,
+                  selected: _selectedIndex == 3,
+                  onTap: () => _selectDestination(3),
+                ),
+                _NavigationItem(
                   label: 'Settings',
                   icon: Icons.settings_outlined,
                   selectedIcon: Icons.settings_rounded,
-                  selected: _selectedIndex == 2,
-                  onTap: () => _selectDestination(2),
+                  selected: _selectedIndex == 4,
+                  onTap: () => _selectDestination(4),
                 ),
               ],
             ),
