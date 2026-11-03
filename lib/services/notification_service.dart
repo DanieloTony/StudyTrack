@@ -22,16 +22,24 @@ class NotificationService {
 
     tz_data.initializeTimeZones();
 
-    final timezoneInfo = await FlutterTimezone.getLocalTimezone();
+    try {
+      final timezoneInfo = await FlutterTimezone.getLocalTimezone();
+      var timezoneName = timezoneInfo.identifier.trim();
 
-var timezoneName = timezoneInfo.identifier;
+      // Support older India timezone identifiers and fall back safely if the
+      // environment returns an unexpected value.
+      if (timezoneName == 'Asia/Calcutta') {
+        timezoneName = 'Asia/Kolkata';
+      }
 
-// Support older India timezone identifiers.
-if (timezoneName == 'Asia/Calcutta') {
-  timezoneName = 'Asia/Kolkata';
-}
-
-tz.setLocalLocation(tz.getLocation(timezoneName));
+      if (timezoneName.isNotEmpty) {
+        tz.setLocalLocation(tz.getLocation(timezoneName));
+      } else {
+        tz.setLocalLocation(tz.getLocation('UTC'));
+      }
+    } catch (_) {
+      tz.setLocalLocation(tz.getLocation('UTC'));
+    }
 
     const settings = InitializationSettings(
       android: AndroidInitializationSettings('@mipmap/ic_launcher'),

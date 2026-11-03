@@ -7,6 +7,9 @@ import '../screens/settings_screen.dart';
 import '../screens/tasks_screen.dart';
 import '../services/notification_service.dart';
 import '../services/task_storage_service.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_theme.dart';
+import '../widgets/glass_surface.dart';
 
 class MainScreen extends StatefulWidget {
   final bool isDarkMode;
@@ -334,13 +337,15 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     final pages = [
       HomeScreen(
         tasks: _tasks,
         isLoading: _isLoading,
         hasLoadError: _loadFailed,
         onRetryLoad: _loadTasks,
-        onAddTask: _openAddTask,
         onShowTasks: () {
           setState(() {
             _selectedIndex = 1;
@@ -386,37 +391,172 @@ class _MainScreenState extends State<MainScreen> {
           child: pages[_selectedIndex],
         ),
       ),
-      floatingActionButton: _selectedIndex == 1
+      floatingActionButton: _selectedIndex < 2
           ? FloatingActionButton.extended(
+              heroTag: 'main-add-task',
               onPressed: _openAddTask,
-              icon: const Icon(Icons.add),
-              label: const Text('New task'),
+              backgroundColor: AppColors.walnut,
+              foregroundColor: isDark ? AppColors.warmSand : Colors.white,
+              elevation: 3,
+              icon: const Icon(Icons.add_rounded),
+              label: Text(
+                _selectedIndex == 0 ? 'Plan a study task' : 'New task',
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
             )
           : null,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'Home',
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.md,
+            AppSpacing.xs,
+            AppSpacing.md,
+            AppSpacing.xs,
           ),
-          NavigationDestination(
-            icon: Icon(Icons.task_alt_outlined),
-            selectedIcon: Icon(Icons.task_alt),
-            label: 'Tasks',
+          child: GlassSurface(
+            key: const ValueKey('main-navigation'),
+            padding: const EdgeInsets.all(AppSpacing.xs),
+            borderRadius: const BorderRadius.all(
+              Radius.circular(AppRadii.panel),
+            ),
+            child: Row(
+              children: [
+                _NavigationItem(
+                  label: 'Home',
+                  icon: Icons.home_outlined,
+                  selectedIcon: Icons.home_rounded,
+                  selected: _selectedIndex == 0,
+                  onTap: () => _selectDestination(0),
+                ),
+                _NavigationItem(
+                  label: 'Tasks',
+                  icon: Icons.task_alt_outlined,
+                  selectedIcon: Icons.task_alt_rounded,
+                  selected: _selectedIndex == 1,
+                  onTap: () => _selectDestination(1),
+                ),
+                _NavigationItem(
+                  label: 'Settings',
+                  icon: Icons.settings_outlined,
+                  selectedIcon: Icons.settings_rounded,
+                  selected: _selectedIndex == 2,
+                  onTap: () => _selectDestination(2),
+                ),
+              ],
+            ),
           ),
-          NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings),
-            label: 'Settings',
+        ),
+      ),
+    );
+  }
+
+  void _selectDestination(int index) {
+    if (_selectedIndex == index) return;
+
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+}
+
+class _NavigationItem extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final IconData selectedIcon;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _NavigationItem({
+    required this.label,
+    required this.icon,
+    required this.selectedIcon,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final activeColor = isDark ? AppColors.warmSand : AppColors.walnut;
+    final inactiveColor = isDark ? AppColors.caramel : AppColors.charcoal;
+
+    return Expanded(
+      child: Semantics(
+        button: true,
+        selected: selected,
+        label: label,
+        child: Tooltip(
+          message: label,
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(AppRadii.compact),
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(AppRadii.compact),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOutCubic,
+                constraints: const BoxConstraints(minHeight: 56),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.xxs,
+                  vertical: AppSpacing.xs,
+                ),
+                decoration: BoxDecoration(
+                  color: selected
+                      ? (isDark
+                          ? AppColors.darkRaised
+                          : AppColors.warmSand.withValues(alpha: 0.35))
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(AppRadii.compact),
+                  border: selected
+                      ? Border.all(
+                          color: isDark ? AppColors.darkBorder : AppColors.border,
+                        )
+                      : null,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 180),
+                      transitionBuilder: (child, animation) {
+                        return FadeTransition(
+                          opacity: animation,
+                          child: ScaleTransition(
+                            scale: animation,
+                            child: child,
+                          ),
+                        );
+                      },
+                      child: Icon(
+                        selected ? selectedIcon : icon,
+                        key: ValueKey<bool>(selected),
+                        color: selected ? activeColor : inactiveColor,
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xxs),
+                    Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: selected ? activeColor : inactiveColor,
+                        fontWeight: selected
+                            ? FontWeight.w800
+                            : FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-        ],
+        ),
       ),
     );
   }

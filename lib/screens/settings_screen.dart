@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../models/study_task.dart';
-import '../theme/app_colors.dart';
+import '../theme/app_theme.dart';
+import '../widgets/glass_surface.dart';
 
 class SettingsScreen extends StatelessWidget {
   final List<StudyTask> tasks;
@@ -21,144 +22,268 @@ class SettingsScreen extends StatelessWidget {
     final pending = tasks.length - completed;
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final contentWidth = constraints.maxWidth < 800
+            ? constraints.maxWidth
+            : 800.0;
+        final horizontalPadding = constraints.maxWidth < 600
+            ? AppSpacing.md
+            : AppSpacing.xl;
+
+        return Center(
+          child: SizedBox(
+            width: contentWidth,
+            child: ListView(
+              padding: EdgeInsets.fromLTRB(
+                horizontalPadding,
+                AppSpacing.lg,
+                horizontalPadding,
+                112,
+              ),
+              children: [
+                Text(
+                  'Settings',
+                  style: theme.textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xxs),
+                Text(
+                  'Make StudyTrack work for you.',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colors.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                GlassSurface(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  borderRadius: const BorderRadius.all(
+                    Radius.circular(AppRadii.panel),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: colors.primary.withValues(
+                            alpha: theme.brightness == Brightness.dark
+                                ? 0.2
+                                : 0.12,
+                          ),
+                          borderRadius: BorderRadius.circular(AppRadii.compact),
+                        ),
+                        child: Icon(
+                          Icons.school_rounded,
+                          color: colors.primary,
+                          size: 30,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'StudyTrack',
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.xxs),
+                            Text(
+                              'Build better habits, one day at a time.',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: colors.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                const _SettingsSectionHeading(
+                  title: 'Your activity',
+                  subtitle: 'A snapshot of your study tasks',
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                LayoutBuilder(
+                  builder: (context, rowConstraints) {
+                    final gap = AppSpacing.sm;
+                    final cardWidth = (rowConstraints.maxWidth - gap * 2) / 3;
+
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: _ActivityCard(
+                            label: 'Created',
+                            count: tasks.length,
+                            icon: Icons.checklist_rounded,
+                            width: cardWidth,
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: _ActivityCard(
+                            label: 'Completed',
+                            count: completed,
+                            icon: Icons.task_alt_rounded,
+                            width: cardWidth,
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: _ActivityCard(
+                            label: 'Pending',
+                            count: pending,
+                            icon: Icons.pending_actions_rounded,
+                            width: cardWidth,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                const _SettingsSectionHeading(
+                  title: 'Appearance',
+                  subtitle: 'Choose a comfortable look for StudyTrack',
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                GlassSurface(
+                  padding: const EdgeInsets.all(AppSpacing.xs),
+                  borderRadius: const BorderRadius.all(
+                    Radius.circular(AppRadii.card),
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.circular(AppRadii.card),
+                    clipBehavior: Clip.antiAlias,
+                    child: SwitchListTile(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppRadii.control),
+                      ),
+                      value: isDarkMode,
+                      onChanged: onThemeChanged,
+                      activeThumbColor: colors.primary,
+                      secondary: AnimatedContainer(
+                        duration: const Duration(milliseconds: 220),
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: colors.primary.withValues(
+                            alpha: theme.brightness == Brightness.dark
+                                ? 0.2
+                                : 0.12,
+                          ),
+                          borderRadius: BorderRadius.circular(AppRadii.control),
+                        ),
+                        child: Icon(
+                          isDarkMode
+                              ? Icons.dark_mode_rounded
+                              : Icons.light_mode_rounded,
+                          color: colors.primary,
+                        ),
+                      ),
+                      title: Text(
+                        isDarkMode ? 'Dark appearance' : 'Light appearance',
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      subtitle: Text(
+                        'Switch between light and dark themes',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colors.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                GlassSurface(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  borderRadius: const BorderRadius.all(
+                    Radius.circular(AppRadii.card),
+                  ),
+                  showShadow: false,
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.favorite_outline_rounded,
+                        color: colors.primary,
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Keep growing',
+                              style: theme.textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.xxs),
+                            Text(
+                              'Consistency matters more than perfection.',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: colors.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                Center(
+                  child: Text(
+                    'StudyTrack • Version 1.0.0',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colors.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _SettingsSectionHeading extends StatelessWidget {
+  final String title;
+  final String subtitle;
+
+  const _SettingsSectionHeading({required this.title, required this.subtitle});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Settings',
-          style: Theme.of(context).textTheme.headlineMedium
-              ?.copyWith(fontWeight: FontWeight.w900),
+          title,
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: AppSpacing.xxs),
         Text(
-          'Make StudyTrack work for you.',
-          style: TextStyle(color: colors.onSurfaceVariant),
-        ),
-        const SizedBox(height: 24),
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: isDark ? colors.surface : null,
-            gradient: isDark
-                ? null
-                : const LinearGradient(
-                    colors: [AppColors.primary, AppColors.primaryPressed],
-                  ),
-            borderRadius: BorderRadius.circular(22),
-          ),
-          child: Row(
-            children: [
-              Icon(
-                Icons.school_rounded,
-                color: isDark ? colors.primary : Colors.white,
-                size: 38,
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'StudyTrack',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      'Build better habits, one day at a time.',
-                      style: TextStyle(
-                        color: isDark
-                            ? colors.onSurfaceVariant
-                            : Color(0xFFE5EEE3),
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 28),
-        Text(
-          'Your activity',
-          style: Theme.of(context).textTheme.titleLarge
-              ?.copyWith(fontWeight: FontWeight.w800),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _ActivityCard(label: 'Created', count: tasks.length),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _ActivityCard(label: 'Completed', count: completed),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _ActivityCard(label: 'Pending', count: pending),
-            ),
-          ],
-        ),
-        const SizedBox(height: 28),
-        Text(
-          'Appearance',
-          style: Theme.of(context).textTheme.titleLarge
-              ?.copyWith(fontWeight: FontWeight.w800),
-        ),
-        const SizedBox(height: 12),
-        Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: isDark ? AppColors.darkBorder : AppColors.border,
-            ),
-          ),
-          child: Material(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.circular(18),
-            clipBehavior: Clip.antiAlias,
-            child: SwitchListTile(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18),
-              ),
-              value: isDarkMode,
-              onChanged: onThemeChanged,
-              activeThumbColor: colors.primary,
-              secondary: Icon(
-                isDarkMode ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
-                color: colors.primary,
-              ),
-              title: const Text(
-                'Dark mode',
-                style: TextStyle(fontWeight: FontWeight.w700),
-              ),
-              subtitle: const Text(
-                'Switch between light and dark themes',
-                style: TextStyle(fontSize: 12),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 28),
-        ListTile(
-          contentPadding: EdgeInsets.zero,
-          leading: Icon(Icons.favorite_outline_rounded, color: colors.primary),
-          title: Text('Keep growing'),
-          subtitle: Text('Consistency matters more than perfection.'),
-        ),
-        const SizedBox(height: 16),
-        Center(
-          child: Text(
-            'StudyTrack • Version 1.0.0',
-            style: TextStyle(color: colors.onSurfaceVariant, fontSize: 12),
+          subtitle,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: colors.onSurfaceVariant,
           ),
         ),
       ],
@@ -169,38 +294,51 @@ class SettingsScreen extends StatelessWidget {
 class _ActivityCard extends StatelessWidget {
   final String label;
   final int count;
+  final IconData icon;
+  final double width;
 
-  const _ActivityCard({required this.label, required this.count});
+  const _ActivityCard({
+    required this.label,
+    required this.count,
+    required this.icon,
+    required this.width,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 8),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Theme.of(context).brightness == Brightness.dark
-              ? AppColors.darkBorder
-              : AppColors.border,
+    return SizedBox(
+      width: width,
+      child: GlassSurface(
+        padding: const EdgeInsets.symmetric(
+          vertical: AppSpacing.md,
+          horizontal: AppSpacing.xs,
         ),
-      ),
-      child: Column(
-        children: [
-          Text(
-            '$count',
-            style: Theme.of(context).textTheme.headlineSmall
-                ?.copyWith(fontWeight: FontWeight.w900),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: TextStyle(color: colors.onSurfaceVariant, fontSize: 11),
-          ),
-        ],
+        borderRadius: const BorderRadius.all(Radius.circular(AppRadii.compact)),
+        showShadow: false,
+        child: Column(
+          children: [
+            Icon(icon, color: colors.primary, size: 21),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              '$count',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xxs),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colors.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

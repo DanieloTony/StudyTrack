@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../models/study_task.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_theme.dart';
+import 'glass_surface.dart';
 
 class TaskTile extends StatefulWidget {
   final StudyTask task;
@@ -39,13 +41,13 @@ class _TaskTileState extends State<TaskTile>
       TweenSequenceItem(
         tween: Tween(
           begin: 1.0,
-          end: 1.045,
+          end: 1.035,
         ).chain(CurveTween(curve: Curves.easeOut)),
         weight: 45,
       ),
       TweenSequenceItem(
         tween: Tween(
-          begin: 1.045,
+          begin: 1.035,
           end: 1.0,
         ).chain(CurveTween(curve: Curves.easeInOut)),
         weight: 55,
@@ -69,20 +71,25 @@ class _TaskTileState extends State<TaskTile>
   }
 
   Color _priorityColor(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     switch (widget.task.priority) {
       case TaskPriority.high:
-        return colors.error;
+        return AppColors.caramel;
       case TaskPriority.medium:
-        return theme.brightness == Brightness.dark
-            ? AppColors.darkWarning
-            : AppColors.warning;
+        return isDark ? AppColors.warmSand : AppColors.walnut;
       case TaskPriority.low:
-        return theme.brightness == Brightness.dark
-            ? AppColors.darkSuccess
-            : AppColors.success;
+        return isDark ? AppColors.darkMeta : AppColors.charcoal;
+    }
+  }
+
+  IconData _priorityIcon() {
+    switch (widget.task.priority) {
+      case TaskPriority.high:
+        return Icons.keyboard_double_arrow_up_rounded;
+      case TaskPriority.medium:
+        return Icons.drag_handle_rounded;
+      case TaskPriority.low:
+        return Icons.keyboard_double_arrow_down_rounded;
     }
   }
 
@@ -138,177 +145,171 @@ class _TaskTileState extends State<TaskTile>
     final colors = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
     final priorityColor = _priorityColor(context);
-    final successColor = isDark ? AppColors.darkSuccess : AppColors.success;
+    final completionColor = isDark ? AppColors.caramel : AppColors.walnut;
 
     return ScaleTransition(
       scale: _scaleAnimation,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 260),
         curve: Curves.easeInOut,
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
+        margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+        child: GlassSurface(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          borderRadius: const BorderRadius.all(Radius.circular(AppRadii.compact)),
           color: task.isCompleted
-              ? successColor.withValues(alpha: isDark ? 0.10 : 0.06)
-              : colors.surface,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: _isOverdue
-                ? colors.error.withValues(alpha: 0.6)
-                : task.isCompleted
-                ? successColor.withValues(alpha: 0.45)
-                : isDark
-                ? AppColors.darkBorder
-                : AppColors.border,
-          ),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 2),
-              child: _AnimatedTaskCheckbox(
-                isCompleted: task.isCompleted,
-                onTap: () => widget.onToggle(task),
+              ? (isDark
+                  ? AppColors.darkRaised.withValues(alpha: 0.5)
+                  : AppColors.warmSand.withValues(alpha: 0.18))
+              : null,
+          borderColor: _isOverdue
+              ? colors.error.withValues(alpha: isDark ? 0.72 : 0.55)
+              : task.isCompleted
+              ? completionColor.withValues(alpha: 0.35)
+              : null,
+          showShadow: !task.isCompleted,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: AppSpacing.xxs),
+                child: _AnimatedTaskCheckbox(
+                  isCompleted: task.isCompleted,
+                  onTap: () => widget.onToggle(task),
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 7),
-
-                  // Smoothly animates text color and strike-through.
-                  AnimatedDefaultTextStyle(
-                    duration: const Duration(milliseconds: 280),
-                    curve: Curves.easeInOut,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
-                      decoration: task.isCompleted
-                          ? TextDecoration.lineThrough
-                          : TextDecoration.none,
-                      decorationColor: successColor,
-                      decorationThickness: 2,
-                      color: task.isCompleted
-                          ? colors.onSurfaceVariant
-                          : colors.onSurface,
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AnimatedDefaultTextStyle(
+                      duration: const Duration(milliseconds: 260),
+                      curve: Curves.easeInOut,
+                      style: theme.textTheme.titleSmall!.copyWith(
+                        fontWeight: FontWeight.w700,
+                        decoration: task.isCompleted
+                            ? TextDecoration.lineThrough
+                            : TextDecoration.none,
+                        decorationColor: completionColor,
+                        decorationThickness: 2,
+                        color: task.isCompleted
+                            ? (isDark
+                                ? AppColors.darkTextSecondary
+                                : AppColors.charcoal)
+                            : colors.onSurface,
+                      ),
+                      child: Text(task.title),
                     ),
-                    child: Text(task.title),
-                  ),
 
-                  if (task.description.trim().isNotEmpty) ...[
-                    const SizedBox(height: 5),
-                    AnimatedOpacity(
-                      duration: const Duration(milliseconds: 250),
-                      opacity: task.isCompleted ? 0.65 : 1.0,
-                      child: Text(
-                        task.description,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: colors.onSurfaceVariant,
-                          fontSize: 12,
-                          height: 1.4,
+                    if (task.description.trim().isNotEmpty) ...[
+                      const SizedBox(height: AppSpacing.xs),
+                      AnimatedOpacity(
+                        duration: const Duration(milliseconds: 240),
+                        opacity: task.isCompleted ? 0.65 : 1.0,
+                        child: Text(
+                          task.description,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: colors.onSurfaceVariant,
+                            height: 1.4,
+                          ),
                         ),
-                      ),
-                    ),
-                  ],
-
-                  const SizedBox(height: 10),
-
-                  Wrap(
-                    spacing: 7,
-                    runSpacing: 7,
-                    children: [
-                      _Tag(
-                        icon: Icons.calendar_today_outlined,
-                        label: _dateLabel(task.studyDate),
-                      ),
-                      _Tag(
-                        icon: Icons.flag_outlined,
-                        label: _priorityLabel(),
-                        color: priorityColor,
-                      ),
-                      if (task.deadline != null)
-                        _Tag(
-                          icon: _isOverdue
-                              ? Icons.warning_amber_rounded
-                              : Icons.schedule_rounded,
-                          label: _isOverdue
-                              ? 'Overdue'
-                              : 'Due ${TimeOfDay.fromDateTime(task.deadline!).format(context)}',
-                          color: _isOverdue
-                              ? colors.error
-                              : colors.onSurfaceVariant,
-                        ),
-
-                      // Completion badge enters and exits smoothly.
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 250),
-                        switchInCurve: Curves.easeOutBack,
-                        switchOutCurve: Curves.easeIn,
-                        transitionBuilder: (child, animation) {
-                          return ScaleTransition(
-                            scale: animation,
-                            child: FadeTransition(
-                              opacity: animation,
-                              child: child,
-                            ),
-                          );
-                        },
-                        child: task.isCompleted
-                            ? _Tag(
-                                key: ValueKey('completed'),
-                                icon: Icons.check_circle_rounded,
-                                label: 'Completed',
-                                color: successColor,
-                              )
-                            : const SizedBox.shrink(
-                                key: ValueKey('not-completed'),
-                              ),
                       ),
                     ],
-                  ),
-                ],
+
+                    const SizedBox(height: AppSpacing.sm),
+
+                    Wrap(
+                      spacing: AppSpacing.xs,
+                      runSpacing: AppSpacing.xs,
+                      children: [
+                        _Tag(
+                          icon: Icons.calendar_today_outlined,
+                          label: _dateLabel(task.studyDate),
+                        ),
+                        _Tag(
+                          icon: _priorityIcon(),
+                          label: _priorityLabel(),
+                          color: priorityColor,
+                        ),
+                        if (task.deadline != null)
+                          _Tag(
+                            icon: _isOverdue
+                                ? Icons.warning_amber_rounded
+                                : Icons.schedule_rounded,
+                            label: _isOverdue
+                                ? 'Overdue'
+                                : 'Due ${TimeOfDay.fromDateTime(task.deadline!).format(context)}',
+                            color: _isOverdue
+                                ? colors.error
+                                : colors.onSurfaceVariant,
+                          ),
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 220),
+                          switchInCurve: Curves.easeOutBack,
+                          switchOutCurve: Curves.easeIn,
+                          transitionBuilder: (child, animation) {
+                            return ScaleTransition(
+                              scale: animation,
+                              child: FadeTransition(
+                                opacity: animation,
+                                child: child,
+                              ),
+                            );
+                          },
+                          child: task.isCompleted
+                              ? _Tag(
+                                  key: const ValueKey('completed'),
+                                  icon: Icons.check_circle_rounded,
+                                  label: 'Completed',
+                                  color: completionColor,
+                                )
+                              : const SizedBox.shrink(
+                                  key: ValueKey('not-completed'),
+                                ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
 
-            const SizedBox(width: 4),
+              const SizedBox(width: AppSpacing.xxs),
 
-            PopupMenuButton<String>(
-              tooltip: 'Task actions',
-              onSelected: (value) {
-                if (value == 'edit') widget.onEdit?.call(task);
-                if (value == 'delete') widget.onDelete?.call(task);
-              },
-              itemBuilder: (context) => [
-                if (widget.onEdit != null)
-                  const PopupMenuItem(
-                    value: 'edit',
-                    child: ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: Icon(Icons.edit_outlined),
-                      title: Text('Edit task'),
-                    ),
-                  ),
-                if (widget.onDelete != null)
-                  PopupMenuItem(
-                    value: 'delete',
-                    child: ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: Icon(
-                        Icons.delete_outline_rounded,
-                        color: colors.error,
+              PopupMenuButton<String>(
+                tooltip: 'Task actions',
+                onSelected: (value) {
+                  if (value == 'edit') widget.onEdit?.call(task);
+                  if (value == 'delete') widget.onDelete?.call(task);
+                },
+                itemBuilder: (context) => [
+                  if (widget.onEdit != null)
+                    const PopupMenuItem(
+                      value: 'edit',
+                      child: ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(Icons.edit_outlined),
+                        title: Text('Edit task'),
                       ),
-                      title: Text('Delete task'),
                     ),
-                  ),
-              ],
-              icon: const Icon(Icons.more_vert_rounded),
-            ),
-          ],
+                  if (widget.onDelete != null)
+                    PopupMenuItem(
+                      value: 'delete',
+                      child: ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(
+                          Icons.delete_outline_rounded,
+                          color: colors.error,
+                        ),
+                        title: const Text('Delete task'),
+                      ),
+                    ),
+                ],
+                icon: const Icon(Icons.more_vert_rounded),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -323,7 +324,7 @@ class _AnimatedTaskCheckbox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Semantics(
       button: true,
@@ -337,20 +338,20 @@ class _AnimatedTaskCheckbox extends StatelessWidget {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 220),
             curve: Curves.easeOut,
-            width: 28,
-            height: 28,
+            width: 26,
+            height: 26,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: isCompleted ? colors.primary : Colors.transparent,
+              color: isCompleted ? AppColors.walnut : Colors.transparent,
               border: Border.all(
                 color: isCompleted
-                    ? colors.primary
-                    : colors.onSurfaceVariant.withValues(alpha: 0.6),
+                    ? AppColors.walnut
+                    : (isDark ? AppColors.caramel : AppColors.caramel),
                 width: 2,
               ),
             ),
             child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
+              duration: const Duration(milliseconds: 180),
               switchInCurve: Curves.easeOutBack,
               transitionBuilder: (child, animation) {
                 return ScaleTransition(
@@ -362,13 +363,13 @@ class _AnimatedTaskCheckbox extends StatelessWidget {
                   ? Icon(
                       Icons.check_rounded,
                       key: const ValueKey('checked'),
-                      color: colors.onPrimary,
-                      size: 19,
+                      color: isDark ? AppColors.warmSand : Colors.white,
+                      size: 18,
                     )
                   : const SizedBox(
                       key: ValueKey('unchecked'),
-                      width: 19,
-                      height: 19,
+                      width: 18,
+                      height: 18,
                     ),
             ),
           ),
@@ -391,17 +392,20 @@ class _Tag extends StatelessWidget {
         color ?? Theme.of(context).colorScheme.onSurfaceVariant;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.xs,
+        vertical: AppSpacing.xxs,
+      ),
       decoration: BoxDecoration(
-        color: effectiveColor.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(8),
+        color: effectiveColor.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(AppRadii.control),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            Icon(icon, size: 12, color: effectiveColor),
-            const SizedBox(width: 4),
+            Icon(icon, size: 13, color: effectiveColor),
+            const SizedBox(width: AppSpacing.xxs),
           ],
           Text(
             label,

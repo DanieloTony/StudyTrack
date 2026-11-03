@@ -2,6 +2,8 @@ import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 
 import '../models/study_task.dart';
+import '../theme/app_theme.dart';
+import 'glass_surface.dart';
 
 class DailyCelebration extends StatefulWidget {
   final List<StudyTask> tasks;
@@ -108,43 +110,39 @@ class _DailyCelebrationState extends State<DailyCelebration>
           opacity: _fade,
           child: ScaleTransition(
             scale: _scale,
-            child: Container(
-              width: double.infinity,
-              margin: const EdgeInsets.only(bottom: 22),
-              padding: const EdgeInsets.all(22),
-              decoration: BoxDecoration(
-                color: colors.surface,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: colors.secondary.withValues(alpha: 0.35),
-                ),
+            child: GlassSurface(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              borderRadius: const BorderRadius.all(
+                Radius.circular(AppRadii.panel),
               ),
               child: Column(
                 children: [
                   Container(
-                    width: 76,
-                    height: 76,
+                    width: 68,
+                    height: 68,
                     decoration: BoxDecoration(
-                      color: colors.secondary.withValues(alpha: 0.12),
+                      color: colors.primary.withValues(
+                        alpha: theme.brightness == Brightness.dark ? 0.2 : 0.12,
+                      ),
                       shape: BoxShape.circle,
                     ),
                     child: Center(
                       child: Icon(
                         Icons.check_rounded,
-                        color: colors.secondary,
-                        size: 38,
+                        color: colors.primary,
+                        size: 34,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.md),
                   Text(
                     'You did it!',
                     textAlign: TextAlign.center,
                     style: theme.textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.xs),
                   Text(
                     'All your study tasks for today are complete. '
                     'Be proud of the progress you made!',
@@ -154,30 +152,32 @@ class _DailyCelebrationState extends State<DailyCelebration>
                       color: colors.onSurfaceVariant,
                     ),
                   ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: AppSpacing.md),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.xs,
                     ),
                     decoration: BoxDecoration(
-                      color: colors.secondary.withValues(alpha: 0.10),
-                      borderRadius: BorderRadius.circular(30),
+                      color: colors.primary.withValues(
+                        alpha: theme.brightness == Brightness.dark ? 0.2 : 0.1,
+                      ),
+                      borderRadius: BorderRadius.circular(AppRadii.pill),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
                           Icons.check_circle_rounded,
-                          color: colors.secondary,
+                          color: colors.primary,
                           size: 20,
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: AppSpacing.xs),
                         Text(
                           '${_todayTasks.length} '
                           '${_todayTasks.length == 1 ? 'task' : 'tasks'} completed',
                           style: theme.textTheme.labelLarge?.copyWith(
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                             color: colors.primary,
                           ),
                         ),

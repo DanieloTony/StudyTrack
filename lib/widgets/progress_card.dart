@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import '../theme/app_theme.dart';
+import 'glass_surface.dart';
 
 class ProgressCard extends StatelessWidget {
   final int completed;
@@ -13,25 +15,17 @@ class ProgressCard extends StatelessWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
-    final helperTextColor = isDark
-        ? AppColors.darkTextSecondary
-        : AppColors.textSecondaryStrong;
-    final progress = total <= 0 ? 0.0 : (completed / total).clamp(0.0, 1.0);
+    final progress = total <= 0
+        ? 0.0
+        : (completed / total).clamp(0.0, 1.0).toDouble();
 
     return Semantics(
       label: total <= 0
           ? 'No study tasks yet'
           : '$completed of $total study tasks completed',
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: colors.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isDark ? AppColors.darkBorder : AppColors.border,
-          ),
-        ),
+      child: GlassSurface(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        borderRadius: const BorderRadius.all(Radius.circular(AppRadii.compact)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -42,7 +36,7 @@ class ProgressCard extends StatelessWidget {
                     'All study tasks',
                     style: theme.textTheme.titleSmall?.copyWith(
                       color: colors.onSurface,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
@@ -50,31 +44,41 @@ class ProgressCard extends StatelessWidget {
                   Text(
                     '$completed of $total complete',
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: helperTextColor,
+                      color: colors.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
                       fontFeatures: const [FontFeature.tabularFigures()],
                     ),
                   ),
               ],
             ),
             if (total > 0) ...[
-              const SizedBox(height: 12),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: LinearProgressIndicator(
-                  value: progress,
-                  minHeight: 6,
-                  backgroundColor: isDark
-                      ? AppColors.darkBorder
-                      : AppColors.secondaryBackground,
-                  valueColor: AlwaysStoppedAnimation<Color>(colors.primary),
-                ),
+              const SizedBox(height: AppSpacing.sm),
+              TweenAnimationBuilder<double>(
+                tween: Tween<double>(begin: 0, end: progress),
+                duration: const Duration(milliseconds: 600),
+                curve: Curves.easeOutCubic,
+                builder: (context, value, _) {
+                  return ClipRRect(
+                    borderRadius: BorderRadius.circular(AppRadii.pill),
+                    child: LinearProgressIndicator(
+                      value: value,
+                      minHeight: 8,
+                      backgroundColor: isDark
+                          ? AppColors.darkRaised
+                          : AppColors.warmSand.withValues(alpha: 0.4),
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                        AppColors.caramel,
+                      ),
+                    ),
+                  );
+                },
               ),
             ] else ...[
-              const SizedBox(height: 5),
+              const SizedBox(height: AppSpacing.xs),
               Text(
                 'Add a task to start tracking your progress.',
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: helperTextColor,
+                  color: colors.onSurfaceVariant,
                 ),
               ),
             ],

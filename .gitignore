@@ -48,3 +48,6 @@ app.*.map.json
 .widget_preview/
 
 .flutter-plugins-dependencies
+
+# Local MCP configuration
+.vscode/mcp.json

@@ -59,7 +59,19 @@ class StudyTask {
   }
 
   factory StudyTask.fromJson(Map<String, dynamic> json) {
-    final priorityName = json['priority'] as String? ?? 'medium';
+    final rawPriority = json['priority'];
+    final priorityName = switch (rawPriority) {
+      TaskPriority priority => priority.name,
+      String value => value.trim(),
+      _ => 'medium',
+    };
+
+    final reminderValue = json['reminderMinutesBefore'];
+    final reminderMinutesBefore = switch (reminderValue) {
+      num value => value.toInt(),
+      String value => int.tryParse(value) ?? 10,
+      _ => 10,
+    };
 
     return StudyTask(
       id: json['id']?.toString() ??
@@ -74,12 +86,11 @@ class StudyTask {
           DateTime.now(),
       deadline: DateTime.tryParse(json['deadline']?.toString() ?? ''),
       priority: TaskPriority.values.firstWhere(
-        (item) => item.name == priorityName,
+        (item) => item.name.toLowerCase() == priorityName.toLowerCase(),
         orElse: () => TaskPriority.medium,
       ),
       isCompleted: json['isCompleted'] as bool? ?? false,
-      reminderMinutesBefore:
-          (json['reminderMinutesBefore'] as num?)?.toInt() ?? 10,
+      reminderMinutesBefore: reminderMinutesBefore,
     );
   }
 }
