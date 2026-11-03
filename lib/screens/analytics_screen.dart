@@ -17,6 +17,8 @@ class AnalyticsScreen extends StatelessWidget {
     final completed = tasks.where((task) => task.isCompleted).length;
     final pending = tasks.length - completed;
     final progress = tasks.isEmpty ? 0.0 : completed / tasks.length;
+    final tasksToHalf = ((tasks.length * 0.5).ceil() - completed)
+        .clamp(0, tasks.length);
     final high = tasks.where((task) => task.priority == TaskPriority.high).length;
     final medium = tasks.where((task) => task.priority == TaskPriority.medium).length;
     final low = tasks.where((task) => task.priority == TaskPriority.low).length;
@@ -76,8 +78,11 @@ class AnalyticsScreen extends StatelessWidget {
                 ])),
               ]),
               const SizedBox(height: AppSpacing.md),
-              Text(tasks.isEmpty ? 'Add a task to begin tracking progress.' :
-                '${tasks.length - ((tasks.length * 0.5).ceil())} tasks until the next 50% milestone',
+              Text(tasks.isEmpty
+                ? 'Add a task to begin tracking progress.'
+                : tasksToHalf == 0
+                  ? 'You have reached at least 50% completion.'
+                  : '$tasksToHalf ${tasksToHalf == 1 ? 'task' : 'tasks'} to reach 50%',
                 style: theme.textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant)),
             ],
           ),
