@@ -131,7 +131,7 @@ class HomeScreen extends StatelessWidget {
               children: [
                 // 1. Greeting Section with Profile & Date
                 _StudyHomeHeader(
-                  greeting: '${_greeting()}, Maya',
+                  greeting: _greeting(),
                   subtitle: 'Make today count · Semester in progress',
                   date: _formattedDate(now),
                 ),
