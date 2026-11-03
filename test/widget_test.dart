@@ -79,5 +79,14 @@ void main() {
     actionRect = tester.getRect(find.byType(FloatingActionButton));
     expect(actionRect.bottom, lessThanOrEqualTo(navigationRect.top));
     expect(tester.takeException(), isNull);
+
+    await tester.tap(find.text('Timer').last);
+    await tester.pump(const Duration(milliseconds: 350));
+    expect(find.text('Focus Session'), findsOneWidget);
+
+    await tester.tap(find.text('Analytics').last);
+    await tester.pump(const Duration(milliseconds: 350));
+    expect(find.text('Study Analytics'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 }
