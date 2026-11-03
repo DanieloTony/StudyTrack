@@ -11,7 +11,7 @@ class StudyTrackApp extends StatefulWidget {
 }
 
 class _StudyTrackAppState extends State<StudyTrackApp> {
-  bool _isDarkMode = false;
+  bool _isDarkMode = true;
 
   @override
   Widget build(BuildContext context) {
